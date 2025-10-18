@@ -1,5 +1,6 @@
 ﻿using Purchase.Core.Interfaces;
 using Purchase.Infrastructure.Repositories;
+using Purchase.Infrastructure.Services;
 
 namespace PurchaseAPI
 {
@@ -11,7 +12,7 @@ namespace PurchaseAPI
             services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             // Services
-            //services.AddScoped<ITransactionService, TransactionService>();
+            services.AddScoped<ITransactionService, TransactionService>();
 
             return services;
         }
