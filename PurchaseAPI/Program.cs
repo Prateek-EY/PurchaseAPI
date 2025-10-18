@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using PurchaseAPI.Configuration;
-using PurchaseAPI.Data;
+using Purchase.Infrastructure.Configuration;
+using Purchase.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,6 @@
-﻿namespace PurchaseAPI.Configuration
+﻿using Microsoft.Extensions.Configuration;
+
+namespace Purchase.Infrastructure.Configuration
 {
     public class PostgreSettings
     {
