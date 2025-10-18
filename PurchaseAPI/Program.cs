@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Purchase.Infrastructure.Configuration;
 using Purchase.Infrastructure.Data;
+using PurchaseAPI;
+using PurchaseAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,8 @@ var pgSettings = PostgreSettings.FromEnvironmentOrConfig(builder.Configuration);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(pgSettings.BuildConnectionString()));
+
+builder.Services.AddInfrastructureServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,9 +25,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+
 }
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

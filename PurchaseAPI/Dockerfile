@@ -12,6 +12,8 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["PurchaseAPI/PurchaseAPI.csproj", "PurchaseAPI/"]
+COPY ["Purchase.Infrastructure/Purchase.Infrastructure.csproj", "Purchase.Infrastructure/"]
+
 RUN dotnet restore "./PurchaseAPI/PurchaseAPI.csproj"
 COPY . .
 WORKDIR "/src/PurchaseAPI"
