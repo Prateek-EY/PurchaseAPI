@@ -23,7 +23,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: PurchaseAPI/Dockerfile
     container_name: purchase-api
     ports:
       - "5000:80"   # HTTP host port : container port  # HTTPS host port : container port
