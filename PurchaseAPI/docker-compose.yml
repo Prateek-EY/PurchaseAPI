@@ -26,8 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: purchase-api
     ports:
-      - "5000:80"   # HTTP host port : container port
-      - "5001:443"  # HTTPS host port : container port
+      - "5000:80"   # HTTP host port : container port  # HTTPS host port : container port
     depends_on:
       db:
         condition: service_healthy
