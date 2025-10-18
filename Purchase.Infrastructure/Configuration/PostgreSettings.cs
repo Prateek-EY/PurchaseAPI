@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Purchase.Infrastructure.Configuration
 {
@@ -10,9 +11,10 @@ namespace Purchase.Infrastructure.Configuration
         public string? Username { get; set; }
         public string? Password { get; set; }
 
-        public static PostgreSettings FromEnvironmentOrConfig(IConfiguration configuration)
+        public static PostgreSettings FromEnvironmentOrConfig(IConfiguration configuration, ILogger<PostgreSettings> logger)
         {
             var baseConnectionString = configuration.GetConnectionString("DefaultConnection");
+            logger.LogInformation("Base connection string: {BaseConnectionString}", baseConnectionString);
             var settings = ParseConnectionString(baseConnectionString);
 
             settings.Host = Environment.GetEnvironmentVariable("DB_HOST") ?? settings.Host;
@@ -21,6 +23,10 @@ namespace Purchase.Infrastructure.Configuration
             settings.Password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? settings.Password;
             settings.Database = Environment.GetEnvironmentVariable("DB_NAME") ?? settings.Database;
 
+            logger.LogInformation("Host: {Host}", settings.Host);
+            logger.LogInformation("Port: {Port}", settings.Port);
+            logger.LogInformation("Database: {Database}", settings.Database);
+            logger.LogInformation("Username: {Username}", settings.Username);
             return settings;
         }
 

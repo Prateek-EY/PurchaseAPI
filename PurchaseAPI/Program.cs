@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Purchase.Infrastructure.Configuration;
 using Purchase.Infrastructure.Data;
 using PurchaseAPI;
@@ -7,8 +8,8 @@ using PurchaseAPI.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-var pgSettings = PostgreSettings.FromEnvironmentOrConfig(builder.Configuration);
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<PostgreSettings>>();
+var pgSettings = PostgreSettings.FromEnvironmentOrConfig(builder.Configuration,logger);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(pgSettings.BuildConnectionString()));
