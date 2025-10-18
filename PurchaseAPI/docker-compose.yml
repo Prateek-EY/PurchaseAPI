@@ -1,0 +1,48 @@
+﻿version: '3.9'
+
+services:
+  db:
+    image: postgres:15.5
+    container_name: local-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: DevLocalPass123
+      POSTGRES_DB: PurchaseDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    networks:
+      - local-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: purchase-api
+    ports:
+      - "5000:80"   # HTTP host port : container port
+      - "5001:443"  # HTTPS host port : container port
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: PurchaseDb
+      DB_USER: postgres
+      DB_PASSWORD: DevLocalPass123
+    networks:
+      - local-network
+
+volumes:
+  postgresdata:
+
+networks:
+  local-network:
+    driver: bridge

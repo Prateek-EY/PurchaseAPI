@@ -1,0 +1,6 @@
+services:
+  purchaseapi:
+    image: ${DOCKER_REGISTRY-}purchaseapi
+    build:
+      context: .
+      dockerfile: PurchaseAPI/Dockerfile

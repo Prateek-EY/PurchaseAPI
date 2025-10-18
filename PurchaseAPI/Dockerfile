@@ -13,7 +13,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["PurchaseAPI/PurchaseAPI.csproj", "PurchaseAPI/"]
 COPY ["Purchase.Infrastructure/Purchase.Infrastructure.csproj", "Purchase.Infrastructure/"]
-
+COPY ["Purchase.Core/Purchase.Core.csproj", "Purchase.Core/"]
 RUN dotnet restore "./PurchaseAPI/PurchaseAPI.csproj"
 COPY . .
 WORKDIR "/src/PurchaseAPI"
