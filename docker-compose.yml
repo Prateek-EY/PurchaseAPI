@@ -15,7 +15,7 @@ services:
 
   purchaseapi:
     build:
-      context: .                     # solution root
+      context: .
       dockerfile: PurchaseAPI/Dockerfile
     container_name: purchaseapi
     ports:

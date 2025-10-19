@@ -25,7 +25,21 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./PurchaseAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PurchaseAPI.dll"]
+
+# Copy source projects so EF CLI can find DbContext
+COPY Purchase.Infrastructure ./Purchase.Infrastructure
+COPY Purchase.Core ./Purchase.Core
+COPY PurchaseAPI ./PurchaseAPI
+
+# Entry point script
+COPY PurchaseAPI/entrypoint.sh .
+RUN chmod +x ./entrypoint.sh
+
+# EF CLI tools
+RUN dotnet tool install --global dotnet-ef --version 6.0.28
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+ENTRYPOINT ["./entrypoint.sh"]
