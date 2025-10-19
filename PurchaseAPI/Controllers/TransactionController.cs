@@ -2,21 +2,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
 
 namespace PurchaseAPI.Controllers
 {
-    [Route("api/[controller]")]
+   
     [ApiController]
+    [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionService _transactionService;
+        private readonly ILogger<TransactionController> _logger;
 
-        public TransactionController(ITransactionService transactionService)
+        public TransactionController(ITransactionService transactionService, ILogger<TransactionController> logger)
         {
             _transactionService = transactionService;
+            _logger = logger;
         }
 
         [HttpPost]
+        [Route("create/transaction")]
         public async Task<IActionResult> Create([FromBody] PurchaseTransaction transaction)
         {
             if (!ModelState.IsValid)
@@ -28,19 +33,43 @@ namespace PurchaseAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdTransaction.Id }, createdTransaction);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet()]
+        [Route("/transaction/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var transaction = await _transactionService.GetTransactionAsync(id);
             return Ok(transaction);
         }
 
-        //[HttpGet("{id:guid}/convert/{currencyCode}")]
-        //public async Task<IActionResult> GetByIdInCurrency(Guid id, string currencyCode)
-        //{
-        //    // This method assumes your service calls the Treasury API for conversion
-        //    var transactionInCurrency = await _transactionService.GetTransactionInCurrencyAsync(id, currencyCode.ToUpper());
-        //    return Ok(transactionInCurrency);
-        //}
+        [HttpPost]
+        [Route("/currencyconvertor")]
+        public async Task<IActionResult> GetTransactionsInCurrency([FromBody] TransactionCurrencyRequest request)
+        {
+            if (request.TransactionIds == null || !request.TransactionIds.Any())
+                return BadRequest("TransactionIds cannot be empty.");
+
+            if (string.IsNullOrWhiteSpace(request.TargetCurrency))
+                return BadRequest("TargetCurrency is required.");
+
+            try
+            {
+                var correlationId = HttpContext.TraceIdentifier;
+
+                _logger.LogInformation("Fetching transactions in currency {Currency} for {Count} transactions. CorrelationId={CorrelationId}",
+                    request.TargetCurrency, request.TransactionIds.Count, correlationId);
+
+                var result = await _transactionService.GetTransactionsInCurrencyAsync(
+                    request.TransactionIds,
+                    request.TargetCurrency
+                );
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching transactions. CorrelationId={CorrelationId}", HttpContext.TraceIdentifier);
+                return StatusCode(500, new { error = ex.Message, correlationId = HttpContext.TraceIdentifier });
+            }
+        }
     }
 }

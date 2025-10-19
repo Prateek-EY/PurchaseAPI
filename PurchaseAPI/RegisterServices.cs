@@ -12,6 +12,7 @@ namespace PurchaseAPI
             services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             // Services
+            services.AddScoped<IExchangeService, ExchangeService>();
             services.AddScoped<ITransactionService, TransactionService>();
 
             return services;
