@@ -12,7 +12,7 @@ namespace Purchase.Core.Entities
     {
         [Key]
         [SwaggerSchema(ReadOnly = true)]
-        public Guid Id { get; private set; } = Guid.NewGuid();
+        public Guid Id { get; set; } = Guid.NewGuid();
         [Required]
         [MaxLength(50, ErrorMessage = "Description cannot exceed 50 characters")]
         public string Description { get; set; } = null!;
