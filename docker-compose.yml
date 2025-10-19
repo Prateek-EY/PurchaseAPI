@@ -14,29 +14,21 @@ services:
       - local-network
 
   migrate:
-    image: mcr.microsoft.com/dotnet/sdk:6.0
+    build:
+      context: .
+      dockerfile: PurchaseAPI/Dockerfile.migrate
     container_name: purchase-migrate
-    volumes:
-      - .:/src   # Mount host folder into container
-    working_dir: /src/PurchaseAPI
-    command: >
-      sh -c "dotnet tool install --global dotnet-ef --version 6.0.28 &&
-             export PATH=\"$PATH:/root/.dotnet/tools\" &&
-             # retry until DB is ready
-             until dotnet ef database update --project ../Purchase.Infrastructure --startup-project .; do
-               echo 'Waiting for Postgres...'
-               sleep 2
-             done"
     depends_on:
       - db
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+      DB_HOST: db
+      DB_PORT: 5432
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - local-network
+    restart: "no"
 
   purchaseapi:
     build:
@@ -46,6 +38,7 @@ services:
     ports:
       - "5001:80"
     depends_on:
+      - migrate
       - db
     environment:
       DB_HOST: ${DB_HOST}

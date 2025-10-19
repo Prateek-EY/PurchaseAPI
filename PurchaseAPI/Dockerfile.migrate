@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+
+WORKDIR /app
+
+# Copy project files for restore
+COPY PurchaseAPI/*.csproj ./PurchaseAPI/
+COPY Purchase.Infrastructure/*.csproj ./Purchase.Infrastructure/
+COPY Purchase.Core/*.csproj ./Purchase.Core/
+
+# Restore dependencies
+RUN dotnet restore ./PurchaseAPI/PurchaseAPI.csproj
+
+# Copy full source
+COPY PurchaseAPI/ ./PurchaseAPI/
+COPY Purchase.Infrastructure/ ./Purchase.Infrastructure/
+COPY Purchase.Core/ ./Purchase.Core/
+
+# Install EF CLI globally
+RUN dotnet tool install --global dotnet-ef --version 6.0.28
+
+# Make dotnet-ef available in all commands
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# Build to catch errors early
+RUN dotnet build ./PurchaseAPI/PurchaseAPI.csproj -c Release
+
+# Run migrations and wait for Postgres (single line)
+CMD ["sh", "-c", "until dotnet ef database update --project /app/Purchase.Infrastructure --startup-project /app/PurchaseAPI; do echo 'Waiting for Postgres...'; sleep 2; done"]
