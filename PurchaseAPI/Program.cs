@@ -21,6 +21,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var certPathFromConfig = builder.Configuration["Kestrel:Certificates:Default:Path"];
+var certPassword = builder.Configuration["Kestrel:Certificates:Default:Password"] ?? "";
+
+var certPath = Path.Combine(Directory.GetCurrentDirectory(), certPathFromConfig);
+
+certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? certPath;
+certPassword = Environment.GetEnvironmentVariable("CERT_PASSWORD") ?? certPassword;
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(443, listenOptions =>
+    {
+        listenOptions.UseHttps(certPath, certPassword);
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

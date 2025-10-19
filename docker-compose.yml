@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
     environment:
-      DB_HOST: db
+      DB_HOST: ${DB_HOST}
       DB_PORT: 5432
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -37,6 +37,7 @@ services:
     container_name: purchaseapi
     ports:
       - "5001:80"
+      - "5002:443"
     depends_on:
       - migrate
       - db
@@ -46,6 +47,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      CERT_PATH: ${CERT_PATH}
+      CERT_PASSWORD: ${CERT_PASSWORD}
     networks:
       - local-network
 
