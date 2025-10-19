@@ -12,5 +12,6 @@ namespace Purchase.Core.Interfaces
         Task<PurchaseTransaction> AddAsync(PurchaseTransaction transaction);
         Task<PurchaseTransaction?> GetByIdAsync(Guid id);
         Task<List<PurchaseTransaction>> GetAllAsync();
+        Task<List<PurchaseTransaction>> GetByIdsAsync(List<Guid> transactionIds);
     }
 }

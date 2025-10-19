@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Purchase.Core.Interfaces;
 using Purchase.Infrastructure.Configuration;
 using Purchase.Infrastructure.Data;
+using Purchase.Infrastructure.Services;
 using PurchaseAPI;
 using PurchaseAPI.Middleware;
 
@@ -14,12 +16,18 @@ var pgSettings = PostgreSettings.FromEnvironmentOrConfig(builder.Configuration,l
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(pgSettings.BuildConnectionString()));
 
+builder.Services.Configure<ExchangeRatesSettings>(
+    builder.Configuration.GetSection("ExchangeRates"));
+builder.Services.AddHttpClient();
+
 builder.Services.AddInfrastructureServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
 
 var certPathFromConfig = builder.Configuration["Kestrel:Certificates:Default:Path"];
 var certPassword = builder.Configuration["Kestrel:Certificates:Default:Password"] ?? "";

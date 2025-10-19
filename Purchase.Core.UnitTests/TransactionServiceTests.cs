@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
@@ -13,12 +14,16 @@ namespace Purchase.Core.UnitTests
     public class TransactionServiceTests
     {
         private readonly Mock<ITransactionRepository> _repoMock;
+        private readonly Mock<IExchangeService> _exchangeServiceMock;
+        private readonly Mock<ILogger<TransactionService>> _loggerMock;
         private readonly TransactionService _service;
 
         public TransactionServiceTests()
         {
             _repoMock = new Mock<ITransactionRepository>();
-            _service = new TransactionService(_repoMock.Object);
+            _exchangeServiceMock = new Mock<IExchangeService>();
+            _loggerMock = new Mock<ILogger<TransactionService>>();
+            _service = new TransactionService(_repoMock.Object, _exchangeServiceMock.Object, _loggerMock.Object);
         }
 
         [Fact]
@@ -42,9 +47,9 @@ namespace Purchase.Core.UnitTests
         public async Task GetAllTransactionsAsync_ReturnsList()
         {
             var transactions = new List<PurchaseTransaction>
-        {
-            new PurchaseTransaction { Id = Guid.NewGuid(), Description = "A", TransactionDate = DateTime.UtcNow, AmountUSD = 1 }
-        };
+                {
+                    new PurchaseTransaction { Id = Guid.NewGuid(), Description = "A", TransactionDate = DateTime.UtcNow, AmountUSD = 1 }
+                };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(transactions);
 
             var result = await _service.GetAllTransactionsAsync();
@@ -72,6 +77,7 @@ namespace Purchase.Core.UnitTests
 
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetTransactionAsync(id));
         }
+
         [Fact]
         public async Task CreateTransactionAsync_InvalidDescription_ThrowsArgumentException()
         {
@@ -85,6 +91,7 @@ namespace Purchase.Core.UnitTests
 
             await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateTransactionAsync(transaction));
         }
+
         [Fact]
         public async Task CreateTransactionAsync_InvalidAmount_ThrowsArgumentException()
         {

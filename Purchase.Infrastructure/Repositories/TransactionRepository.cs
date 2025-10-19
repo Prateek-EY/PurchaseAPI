@@ -16,20 +16,59 @@ namespace Purchase.Infrastructure.Repositories
 
         public async Task<PurchaseTransaction> AddAsync(PurchaseTransaction transaction)
         {
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-            return transaction;
+            try
+            {
+                transaction.Id = new Guid();
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+                return transaction;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task<PurchaseTransaction?> GetByIdAsync(Guid id)
         {
-            return await _context.Transactions.FindAsync(id);
+            try
+            {
+                return await _context.Transactions.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<PurchaseTransaction>> GetAllAsync()
         {
-            return await _context.Transactions.ToListAsync();
+            try
+            {
+                return await _context.Transactions.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
+        public async Task<List<PurchaseTransaction>> GetByIdsAsync(List<Guid> transactionIds)
+        {
+            try
+            {
+                return await _context.Transactions
+                    .Where(t => transactionIds.Contains(t.Id))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
     }
 }
