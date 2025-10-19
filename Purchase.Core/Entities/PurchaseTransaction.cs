@@ -4,13 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Purchase.Core.Entities
 {
     public class PurchaseTransaction
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        [SwaggerSchema(ReadOnly = true)]
+        public Guid Id { get; private set; } = Guid.NewGuid();
         [Required]
         [MaxLength(50, ErrorMessage = "Description cannot exceed 50 characters")]
         public string Description { get; set; } = null!;
