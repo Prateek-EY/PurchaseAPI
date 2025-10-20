@@ -12,7 +12,7 @@ namespace Purchase.Core.Entities
     public class PurchaseTransaction
     {
         [Key]
-        [HiddenInput(DisplayValue = false)] // Correct usage of HiddenInputAttribute
+        [HiddenInput(DisplayValue = false)]
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]

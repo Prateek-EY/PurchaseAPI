@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
 using Purchase.Infrastructure.Data;
@@ -8,10 +9,12 @@ namespace Purchase.Infrastructure.Repositories
     public class TransactionRepository : ITransactionRepository
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<TransactionRepository> logger;
 
-        public TransactionRepository(AppDbContext context)
+        public TransactionRepository(AppDbContext context, ILogger<TransactionRepository> _logger)
         {
             _context = context;
+            logger = _logger;
         }
 
         public async Task<PurchaseTransaction> AddAsync(PurchaseTransaction transaction)
@@ -19,13 +22,17 @@ namespace Purchase.Infrastructure.Repositories
             try
             {
                 transaction.Id = new Guid();
+                if(transaction.AmountUSD < 0)
+                {
+                    throw new Exception("Amount is negative");
+                }
                 _context.Transactions.Add(transaction);
                 await _context.SaveChangesAsync();
                 return transaction;
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -38,7 +45,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -51,7 +58,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -66,7 +73,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }

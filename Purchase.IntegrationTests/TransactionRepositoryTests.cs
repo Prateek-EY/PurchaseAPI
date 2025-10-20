@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Purchase.Core.Entities;
 
 namespace Purchase.IntegrationTests
@@ -82,6 +83,87 @@ namespace Purchase.IntegrationTests
             Assert.Contains(result, t => t.Description == "First");
             Assert.Contains(result, t => t.Description == "Second");
         }
+
+        [Fact]
+        public async Task GetByIdsAsync_ShouldReturnMatchingTransactions()
+        {
+            var txn1 = new PurchaseTransaction
+            {
+                Description = "Batch1",
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = 10m
+            };
+            var txn2 = new PurchaseTransaction
+            {
+                Description = "Batch2",
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = 20m
+            };
+            var txn3 = new PurchaseTransaction
+            {
+                Description = "Batch3",
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = 30m
+            };
+            Context.Transactions.AddRange(txn1, txn2, txn3);
+            await Context.SaveChangesAsync();
+
+            var ids = new List<Guid> { txn1.Id, txn3.Id };
+            var result = await Repository.GetByIdsAsync(ids);
+
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, t => t.Description == "Batch1");
+            Assert.Contains(result, t => t.Description == "Batch3");
+            Assert.DoesNotContain(result, t => t.Description == "Batch2");
+        }
+
+        [Fact]
+        public async Task GetByIdsAsync_ShouldReturnEmpty_WhenNoIdsMatch()
+        {
+            var txn = new PurchaseTransaction
+            {
+                Description = "NoMatch",
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = 10m
+            };
+            Context.Transactions.Add(txn);
+            await Context.SaveChangesAsync();
+
+            var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+            var result = await Repository.GetByIdsAsync(ids);
+
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrow_WhenDescriptionTooLong()
+        {
+            var txn = new PurchaseTransaction
+            {
+                Description = new string('x', 100),
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = 10m
+            };
+
+            await Assert.ThrowsAsync<DbUpdateException>(() => Repository.AddAsync(txn));
+            Context.Entry(txn).State = EntityState.Detached;
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrow_WhenAmountIsNegative()
+        {
+            var txn = new PurchaseTransaction
+            {
+                Description = "NegativeAmount",
+                TransactionDate = DateTime.UtcNow,
+                AmountUSD = -5m
+            };
+
+            await Assert.ThrowsAsync<Exception>(() => Repository.AddAsync(txn));
+            Context.Entry(txn).State = EntityState.Detached;
+        }
+
+
 
     }
 }
