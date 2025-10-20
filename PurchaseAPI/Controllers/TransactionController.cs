@@ -54,7 +54,7 @@ namespace PurchaseAPI.Controllers
             try
             {
             
-                _logger.LogInformation("Fetching transactions in currency {Currency} for {Count} transactions. CorrelationId={CorrelationId}",
+                _logger.LogInformation("Fetching transactions in currency {Currency} for {Count} transactions.",
                     request.TargetCurrency, request.TransactionIds.Count);
 
                 var result = await _transactionService.GetTransactionsInCurrencyAsync(
@@ -66,8 +66,8 @@ namespace PurchaseAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching transactions. CorrelationId={CorrelationId}", HttpContext.TraceIdentifier);
-                return StatusCode(500, new { error = ex.Message, correlationId = HttpContext.TraceIdentifier });
+                _logger.LogError(ex, "Error fetching transactions.");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
     }
