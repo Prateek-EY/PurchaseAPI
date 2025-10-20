@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
 using Purchase.Infrastructure.Data;
 
 namespace Purchase.Infrastructure.Repositories
@@ -17,18 +18,26 @@ namespace Purchase.Infrastructure.Repositories
             logger = _logger;
         }
 
-        public async Task<PurchaseTransaction> AddAsync(PurchaseTransaction transaction)
+        public async Task<PurchaseTransaction> AddAsync(PurchaseTransactionRequest transaction)
         {
             try
             {
-                transaction.Id = new Guid();
-                if(transaction.AmountUSD < 0)
+                if (transaction.AmountUSD < 0)
                 {
                     throw new Exception("Amount is negative");
                 }
-                _context.Transactions.Add(transaction);
+
+                var purchaseTransaction = new PurchaseTransaction
+                {
+                    Id = transaction.Id,
+                    Description = transaction.Description,
+                    TransactionDate = transaction.TransactionDate,
+                    AmountUSD = transaction.AmountUSD
+                };
+
+                _context.Transactions.Add(purchaseTransaction);
                 await _context.SaveChangesAsync();
-                return transaction;
+                return purchaseTransaction;
             }
             catch (Exception ex)
             {

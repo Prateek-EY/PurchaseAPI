@@ -22,7 +22,7 @@ namespace PurchaseAPI.Controllers
 
         [HttpPost]
         [Route("create/transaction")]
-        public async Task<IActionResult> Create([FromBody] PurchaseTransaction transaction)
+        public async Task<IActionResult> Create([FromBody] PurchaseTransactionRequest transaction)
         {
             if (!ModelState.IsValid)
             {
@@ -33,7 +33,7 @@ namespace PurchaseAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdTransaction.Id }, createdTransaction);
         }
 
-        [HttpGet()]
+        [HttpGet]
         [Route("/transaction/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -53,10 +53,9 @@ namespace PurchaseAPI.Controllers
 
             try
             {
-                var correlationId = HttpContext.TraceIdentifier;
-
+            
                 _logger.LogInformation("Fetching transactions in currency {Currency} for {Count} transactions. CorrelationId={CorrelationId}",
-                    request.TargetCurrency, request.TransactionIds.Count, correlationId);
+                    request.TargetCurrency, request.TransactionIds.Count);
 
                 var result = await _transactionService.GetTransactionsInCurrencyAsync(
                     request.TransactionIds,

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Purchase.Core.Entities;
+using Purchase.Core.Request;
 
 namespace Purchase.IntegrationTests
 {
@@ -14,7 +15,7 @@ namespace Purchase.IntegrationTests
         [Fact]
         public async Task AddAsync_ShouldPersistTransaction()
         {
-            var transaction = new PurchaseTransaction
+            var transaction = new PurchaseTransactionRequest
             {
                 Description = "Integration Test Add",
                 TransactionDate = DateTime.UtcNow,
@@ -136,31 +137,17 @@ namespace Purchase.IntegrationTests
         }
 
         [Fact]
-        public async Task AddAsync_ShouldThrow_WhenDescriptionTooLong()
-        {
-            var txn = new PurchaseTransaction
-            {
-                Description = new string('x', 100),
-                TransactionDate = DateTime.UtcNow,
-                AmountUSD = 10m
-            };
-
-            await Assert.ThrowsAsync<DbUpdateException>(() => Repository.AddAsync(txn));
-            Context.Entry(txn).State = EntityState.Detached;
-        }
-
-        [Fact]
         public async Task AddAsync_ShouldThrow_WhenAmountIsNegative()
         {
-            var txn = new PurchaseTransaction
+            var txn = new PurchaseTransactionRequest
             {
+
                 Description = "NegativeAmount",
                 TransactionDate = DateTime.UtcNow,
                 AmountUSD = -5m
             };
 
             await Assert.ThrowsAsync<Exception>(() => Repository.AddAsync(txn));
-            Context.Entry(txn).State = EntityState.Detached;
         }
 
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
 using Purchase.Core.Response;
 using Purchase.Infrastructure.Services;
 
@@ -30,18 +31,30 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_ValidTransaction_ReturnsTransaction()
         {
-            var transaction = new PurchaseTransaction
+            var transactionRequest = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "Test",
                 TransactionDate = DateTime.UtcNow,
                 AmountUSD = 10.00m
             };
-            _repoMock.Setup(r => r.AddAsync(transaction)).ReturnsAsync(transaction);
 
-            var result = await _service.CreateTransactionAsync(transaction);
+            var transaction = new PurchaseTransaction
+            {
+                Id = transactionRequest.Id,
+                Description = transactionRequest.Description,
+                TransactionDate = transactionRequest.TransactionDate,
+                AmountUSD = transactionRequest.AmountUSD
+            };
 
-            Assert.Equal(transaction, result);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<PurchaseTransactionRequest>())).ReturnsAsync(transaction);
+
+            var result = await _service.CreateTransactionAsync(transactionRequest);
+
+            Assert.Equal(transaction.Id, result.Id);
+            Assert.Equal(transaction.Description, result.Description);
+            Assert.Equal(transaction.TransactionDate, result.TransactionDate);
+            Assert.Equal(transaction.AmountUSD, result.AmountUSD);
         }
 
         [Fact]
@@ -82,7 +95,7 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_InvalidDescription_ThrowsArgumentException()
         {
-            var transaction = new PurchaseTransaction
+            var transaction = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "This description is way too long for the allowed fifty character limit!",
@@ -96,7 +109,7 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_InvalidAmount_ThrowsArgumentException()
         {
-            var transaction = new PurchaseTransaction
+            var transaction = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "Test",
