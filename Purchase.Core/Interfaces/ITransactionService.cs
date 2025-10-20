@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Purchase.Core.Entities;
+using Purchase.Core.Request;
 using Purchase.Core.Response;
 
 namespace Purchase.Core.Interfaces
 {
     public interface ITransactionService
     {
-        Task<PurchaseTransaction> CreateTransactionAsync(PurchaseTransaction transaction);
+        Task<PurchaseTransaction> CreateTransactionAsync(PurchaseTransactionRequest transaction);
         Task<PurchaseTransaction?> GetTransactionAsync(Guid id);
         Task<List<PurchaseTransaction>> GetAllTransactionsAsync();
         Task<List<ConvertedPurchaseTransactionDto>> GetTransactionsInCurrencyAsync(

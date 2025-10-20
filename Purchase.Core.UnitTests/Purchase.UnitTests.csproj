@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Purchase.Core\Purchase.Core.csproj" />
     <ProjectReference Include="..\Purchase.Infrastructure\Purchase.Infrastructure.csproj" />
+    <ProjectReference Include="..\PurchaseAPI\PurchaseAPI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Purchase.Infrastructure.Configuration;
 using Purchase.Infrastructure.Data;
 using Purchase.Infrastructure.Repositories;
@@ -32,8 +33,11 @@ namespace Purchase.IntegrationTests
 
             Context = new AppDbContext(options);
             Context.Database.Migrate();
-            Repository = new TransactionRepository(Context);
 
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var logger = loggerFactory.CreateLogger<TransactionRepository>();
+
+            Repository = new TransactionRepository(Context, logger);
         }
 
         public void Dispose()

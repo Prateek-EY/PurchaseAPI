@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
 using Purchase.Infrastructure.Data;
 
 namespace Purchase.Infrastructure.Repositories
@@ -8,24 +10,38 @@ namespace Purchase.Infrastructure.Repositories
     public class TransactionRepository : ITransactionRepository
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<TransactionRepository> logger;
 
-        public TransactionRepository(AppDbContext context)
+        public TransactionRepository(AppDbContext context, ILogger<TransactionRepository> _logger)
         {
             _context = context;
+            logger = _logger;
         }
 
-        public async Task<PurchaseTransaction> AddAsync(PurchaseTransaction transaction)
+        public async Task<PurchaseTransaction> AddAsync(PurchaseTransactionRequest transaction)
         {
             try
             {
-                transaction.Id = new Guid();
-                _context.Transactions.Add(transaction);
+                if (transaction.AmountUSD < 0)
+                {
+                    throw new Exception("Amount is negative");
+                }
+
+                var purchaseTransaction = new PurchaseTransaction
+                {
+                    Id = transaction.Id,
+                    Description = transaction.Description,
+                    TransactionDate = transaction.TransactionDate,
+                    AmountUSD = transaction.AmountUSD
+                };
+
+                _context.Transactions.Add(purchaseTransaction);
                 await _context.SaveChangesAsync();
-                return transaction;
+                return purchaseTransaction;
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -38,7 +54,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -51,7 +67,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }
@@ -66,7 +82,7 @@ namespace Purchase.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-
+                logger.LogError(ex.Message);
                 throw;
             }
         }

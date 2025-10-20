@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
+using Purchase.Core.Response;
 using Purchase.Infrastructure.Services;
 
 namespace Purchase.Core.UnitTests
@@ -29,18 +31,30 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_ValidTransaction_ReturnsTransaction()
         {
-            var transaction = new PurchaseTransaction
+            var transactionRequest = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "Test",
                 TransactionDate = DateTime.UtcNow,
                 AmountUSD = 10.00m
             };
-            _repoMock.Setup(r => r.AddAsync(transaction)).ReturnsAsync(transaction);
 
-            var result = await _service.CreateTransactionAsync(transaction);
+            var transaction = new PurchaseTransaction
+            {
+                Id = transactionRequest.Id,
+                Description = transactionRequest.Description,
+                TransactionDate = transactionRequest.TransactionDate,
+                AmountUSD = transactionRequest.AmountUSD
+            };
 
-            Assert.Equal(transaction, result);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<PurchaseTransactionRequest>())).ReturnsAsync(transaction);
+
+            var result = await _service.CreateTransactionAsync(transactionRequest);
+
+            Assert.Equal(transaction.Id, result.Id);
+            Assert.Equal(transaction.Description, result.Description);
+            Assert.Equal(transaction.TransactionDate, result.TransactionDate);
+            Assert.Equal(transaction.AmountUSD, result.AmountUSD);
         }
 
         [Fact]
@@ -81,7 +95,7 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_InvalidDescription_ThrowsArgumentException()
         {
-            var transaction = new PurchaseTransaction
+            var transaction = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "This description is way too long for the allowed fifty character limit!",
@@ -95,7 +109,7 @@ namespace Purchase.Core.UnitTests
         [Fact]
         public async Task CreateTransactionAsync_InvalidAmount_ThrowsArgumentException()
         {
-            var transaction = new PurchaseTransaction
+            var transaction = new PurchaseTransactionRequest
             {
                 Id = Guid.NewGuid(),
                 Description = "Test",
@@ -104,6 +118,66 @@ namespace Purchase.Core.UnitTests
             };
 
             await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateTransactionAsync(transaction));
+        }
+
+        [Fact]
+        public async Task GetTransactionsInCurrencyAsync_ReturnsWarning_WhenNoExchangeRateFound()
+        {
+            var txn = new PurchaseTransaction
+            {
+                Id = Guid.NewGuid(),
+                Description = "Test",
+                AmountUSD = 100,
+                TransactionDate = DateTime.Today
+            };
+            _repoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<Guid>>())).ReturnsAsync(new List<PurchaseTransaction> { txn });
+            _exchangeServiceMock.Setup(e => e.GetExchangeRatesAsync(It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(new List<ExchangeRateRecord>());
+
+            var result = await _service.GetTransactionsInCurrencyAsync(new List<Guid> { txn.Id }, "EUR");
+
+            Assert.Single(result);
+            Assert.Equal(0, result[0].ExchangeRate);
+            Assert.Equal(0, result[0].ConvertedAmount);
+            Assert.Contains("Cannot be converted", result[0].Description);
+        }
+
+        [Fact]
+        public async Task GetTransactionsInCurrencyAsync_UsesMostRecentRateWithin6Months()
+        {
+            var txn = new PurchaseTransaction
+            {
+                Id = Guid.NewGuid(),
+                Description = "Test",
+                AmountUSD = 100,
+                TransactionDate = new DateTime(2025, 10, 20)
+            };
+            var rate = new ExchangeRateRecord
+            {
+                CountryCurrencyDesc = "EUR",
+                Rate = 2.0m,
+                Date = new DateTime(2025, 10, 19)
+            };
+            _repoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<Guid>>())).ReturnsAsync(new List<PurchaseTransaction> { txn });
+            _exchangeServiceMock.Setup(e => e.GetExchangeRatesAsync(It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(new List<ExchangeRateRecord> { rate });
+
+            var result = await _service.GetTransactionsInCurrencyAsync(new List<Guid> { txn.Id }, "EUR");
+
+            Assert.Single(result);
+            Assert.Equal(rate.Rate, result[0].ExchangeRate);
+            Assert.Equal(200, result[0].ConvertedAmount);
+        }
+
+        [Fact]
+        public async Task GetAllTransactionsAsync_CallsRepository()
+        {
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<PurchaseTransaction>());
+
+            var result = await _service.GetAllTransactionsAsync();
+
+            _repoMock.Verify(r => r.GetAllAsync(), Times.Once);
+            Assert.Empty(result);
         }
     }
 }

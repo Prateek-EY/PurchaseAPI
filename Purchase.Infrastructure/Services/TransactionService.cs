@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Purchase.Core.Entities;
 using Purchase.Core.Interfaces;
+using Purchase.Core.Request;
 using Purchase.Core.Response;
 
 namespace Purchase.Infrastructure.Services
@@ -25,7 +26,7 @@ namespace Purchase.Infrastructure.Services
             _exchangeService = exchangeService;
             _logger = logger;
         }
-        public async Task<PurchaseTransaction> CreateTransactionAsync(PurchaseTransaction transaction)
+        public async Task<PurchaseTransaction> CreateTransactionAsync(PurchaseTransactionRequest transaction)
         {
             if (transaction.AmountUSD <= 0)
                 throw new ArgumentException("Purchase amount must be positive");
