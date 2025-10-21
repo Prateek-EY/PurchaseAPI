@@ -21,6 +21,8 @@ namespace Purchase.Infrastructure.Configuration
             settings.Username = Environment.GetEnvironmentVariable("DB_USER") ?? settings.Username;
             settings.Password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? settings.Password;
             settings.Database = Environment.GetEnvironmentVariable("DB_NAME") ?? settings.Database;
+            logger.LogInformation("Postgre settings resolved: Host={Host}, Port={Port}, DB={Db}, User={User}",
+                settings.Host, settings.Port, settings.Database, settings.Username);
             return settings;
         }
 

@@ -27,5 +27,17 @@ RUN dotnet publish "./PurchaseAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publis
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# Copy the entire certs folder (contains both .crt and .p12)
 COPY ./certs ./certs
+
+# Install CA certificates and update the store (picks up any .crt files in /usr/local/share/ca-certificates/)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    # Copy all .crt files from your certs folder to system CA store
+    cp /app/certs/*.crt /usr/local/share/ca-certificates/ 2>/dev/null || true && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Ensure .NET uses system SSL
+ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENTRYPOINT ["dotnet", "PurchaseAPI.dll"]

@@ -6,6 +6,7 @@ WORKDIR /app
 COPY PurchaseAPI/*.csproj ./PurchaseAPI/
 COPY Purchase.Infrastructure/*.csproj ./Purchase.Infrastructure/
 COPY Purchase.Core/*.csproj ./Purchase.Core/
+COPY ./certs ./certs
 
 # Restore dependencies
 RUN dotnet restore ./PurchaseAPI/PurchaseAPI.csproj
@@ -14,6 +15,7 @@ RUN dotnet restore ./PurchaseAPI/PurchaseAPI.csproj
 COPY PurchaseAPI/ ./PurchaseAPI/
 COPY Purchase.Infrastructure/ ./Purchase.Infrastructure/
 COPY Purchase.Core/ ./Purchase.Core/
+
 
 # Install EF CLI globally
 RUN dotnet tool install --global dotnet-ef --version 6.0.28

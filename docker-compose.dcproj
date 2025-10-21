@@ -18,6 +18,5 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".env" />
-    <Content Include="certs\Certificates.p12" />
   </ItemGroup>
 </Project>
